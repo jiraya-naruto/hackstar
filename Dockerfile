@@ -1,32 +1,32 @@
-# Use an official Ubuntu base image
+# Use a base image with GTK and WebKit2GTK support
 FROM ubuntu:20.04
 
-# Set environment variables to non-interactive to avoid prompts during package installation
+# Set environment variables to prevent interaction during package installations
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Update package list and install necessary dependencies
-RUN apt-get update && apt-get install -y \
+# Install required dependencies
+RUN apt-get update && \
+    apt-get install -y \
     build-essential \
-    libgtk-3-dev \
-    libwebkit2gtk-4.0-dev \
     pkg-config \
-    wget \
-    cmake \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+    gtk+-3.0 \
+    libwebkit2gtk-4.0-dev \
+    g++ \
+    wget && \
+    rm -rf /var/lib/apt/lists/*
 
-# Create a directory for the application
+# Copy the source code and HTML files into the container
+COPY main.cpp /app/main.cpp
+COPY index.html /app/index.html
+
+# Set the working directory
 WORKDIR /app
 
-# Copy the C++ source code and HTML files into the container
-COPY main.cpp /app/
-COPY index.html /app/
+# Compile the C++ code
+RUN g++ main.cpp -o app `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0`
 
-# Compile the C++ application
-RUN g++ main.cpp -o fullscreen_app `pkg-config --cflags --libs gtk+-3.0 webkit2gtk-4.0`
+# Expose any necessary ports (if your WebView loads content from a local server, for example)
+# EXPOSE 8080
 
-# Expose the port (if needed for a web server)
-EXPOSE 8080
-
-# Set the default command to run the compiled application
-CMD ["./fullscreen_app"]
+# Run the application
+CMD ["./app"]
