@@ -4,3 +4,6 @@
 
 ```bash
 docker build -t my_web_application .
+## Run
+
+docker run --rm -it my_web_application
